@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nyota | Akarsh & Vartika - The Royal Union</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Great+Vibes&family=Lato:wght@300;400&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        /* --- CORE VARIABLES & BASICS --- */
+        :root {
+            --gold-light: #F9E59E;
+            --gold-base: #D4AF37;
+            --gold-dark: #8A6E24;
+            --deep-black: #050505;
+            --midnight: #0a0a12;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: var(--gold-light);
+            overflow: hidden;
+            font-family: 'Playfair Display', serif;
+            -webkit-font-smoothing: antialiased;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- TYPOGRAPHY EFFECTS --- */
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        .font-script { font-family: 'Great Vibes', cursive; }
+        
+        /* Gold Text Gradient */
+        .text-gold-gradient {
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            background-size: 200% auto;
+            animation: shineText 5s linear infinite;
+        }
+
+        @keyframes shineText {
+            to { background-position: 200% center; }
+        }
+
+        /* --- BACKGROUND ANIMATIONS --- */
+        
+        /* Rotating Mandala/Ornament */
+        .mandala-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 150vh; /* Large size */
+            height: 150vh;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 0 L52 40 L90 50 L52 60 L50 100 L48 60 L10 50 L48 40 Z' fill='none' stroke='%23D4AF37' stroke-width='0.2' opacity='0.1'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23D4AF37' stroke-width='0.1' opacity='0.1' /%3E%3Cpath d='M50 10 L60 40 L80 50 L60 60 L50 90 L40 60 L20 50 L40 40 Z' fill='none' stroke='%23D4AF37' stroke-width='0.1' opacity='0.05' transform='rotate(45 50 50)'/%3E%3C/svg%3E");
+            transform: translate(-50%, -50%);
+            opacity: 0.2;
+            pointer-events: none;
+            z-index: 1;
+            animation: rotateMandala 60s linear infinite;
+        }
+
+        @keyframes rotateMandala {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Particles */
+        .particle {
+            position: absolute;
+            background: radial-gradient(circle, var(--gold-light) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        /* --- VIDEO CONTAINER (STRICT 9:16 ASPECT RATIO) --- */
+        .video-wrapper {
+            position: fixed;
+            top: 50%; 
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 2s ease;
+            overflow: hidden;
+
+            /* 1. Force the container to be exactly 9:16 ratio */
+            aspect-ratio: 9 / 16;
+
+            /* 2. Default Sizing Logic (For Desktops/Tablets - Wider screens):
+               - Match the viewport height (100vh)
+               - Width will auto-calculate to maintain 9:16 ratio
+            */
+            height: 100vh;
+            width: auto;
+            
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+
+        /* 3. Mobile Sizing Logic:
+           - If the screen is NARROWER than 9:16 (e.g. Portrait Phones), 
+           - We must match the viewport width (100vw) instead.
+           - Height will auto-calculate to maintain 9:16 ratio.
+        */
+        @media (max-aspect-ratio: 9/16) {
+            .video-wrapper {
+                width: 100vw;
+                height: auto;
+            }
+        }
+        
+        .video-wrapper.active { opacity: 1; }
+
+        .video-wrapper video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Fill the 9:16 container completely */
+            /* Fallback background if video fails */
+            background: url('https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+        }
+
+        /* Dark overlay on top of video to ensure text readability */
+        .cinematic-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(5,5,5,0.2) 0%, rgba(5,5,5,0.8) 80%);
+            z-index: 1;
+            /* Initially hidden or lighter, gets darker when content appears */
+            opacity: 0.3; 
+            transition: opacity 2s ease;
+        }
+        
+        .cinematic-overlay.dark-mode {
+            opacity: 0.8; /* Darken when text appears */
+        }
+
+        /* Border Frame */
+        .royal-border {
+            position: fixed;
+            top: 20px; left: 20px; right: 20px; bottom: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            z-index: 20;
+            pointer-events: none;
+            transition: all 1s ease;
+        }
+        .royal-border::before, .royal-border::after {
+            content: ''; position: absolute; width: 20px; height: 20px;
+            border-color: var(--gold-base); border-style: solid; transition: all 1s ease;
+        }
+        .royal-border::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        .royal-border::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+        /* --- BUTTON STYLES --- */
+        .btn-royal {
+            position: relative;
+            background: transparent;
+            color: var(--gold-light);
+            border: 1px solid var(--gold-base);
+            padding: 1rem 3rem;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            z-index: 10;
+            backdrop-filter: blur(2px);
+            cursor: pointer;
+        }
+
+        .btn-royal::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-royal:hover {
+            border-color: var(--gold-light);
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.3);
+            letter-spacing: 0.2em;
+        }
+
+        .btn-royal:hover::before {
+            left: 100%;
+        }
+
+        /* --- TRANSITION STATES --- */
+        .hidden-visually { opacity: 0; pointer-events: none; }
+        .visible { opacity: 1; pointer-events: auto; }
+        
+        /* Blur reveal for text */
+        .blur-in {
+            animation: blurIn 1.5s ease forwards;
+            opacity: 0;
+            filter: blur(10px);
+        }
+        @keyframes blurIn {
+            to { opacity: 1; filter: blur(0); }
+        }
+
+        /* --- AUDIO TOGGLE --- */
+        .audio-toggle {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            z-index: 50;
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold-light);
+            cursor: pointer;
+            transition: all 0.3s;
+            opacity: 0; /* Hidden initially */
+        }
+        .audio-toggle:hover {
+            background: rgba(212, 175, 55, 0.2);
+            transform: scale(1.1);
+        }
+
+        /* --- FINAL EXIT ANIMATION --- */
+        .zoom-exit {
+            animation: zoomIntoLight 2.5s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+        }
+        @keyframes zoomIntoLight {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { filter: brightness(5) blur(2px); }
+            100% { transform: scale(20); filter: brightness(50); opacity: 0; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Audio Element -->
+    <audio id="wedding-audio" loop preload="auto">
+        <source src="" type="audio/mpeg">
+    </audio>
+
+    <!-- Global Decoration -->
+    <div class="royal-border"></div>
+    <div class="mandala-bg"></div>
+    <div id="particles-container" class="fixed inset-0 z-0 overflow-hidden"></div>
+
+    
+
+    <!-- 1. START SCREEN OVERLAY -->
+    <div id="start-overlay" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050505] transition-all duration-1000 cursor-pointer">
+        <!-- Floating content -->
+        <div class="relative z-10 text-center p-12 border border-[#D4AF37]/20 bg-black/40 backdrop-blur-md rounded-sm transform transition-transform duration-500 hover:scale-[1.02] shadow-[0_0_50px_rgba(0,0,0,0.8)]">
+            
+            <div class="mb-6 opacity-80 animate-pulse">
+                <svg width="40" height="40" viewBox="0 0 100 100" class="mx-auto fill-current text-[#D4AF37]">
+                    <path d="M50 0 C20 0 0 20 0 50 C0 80 20 100 50 100 C80 100 100 80 100 50 C100 20 80 0 50 0 Z M50 90 C30 90 10 70 10 50 C10 30 30 10 50 10 C70 10 90 30 90 50 C90 70 70 90 50 90 Z" fill-opacity="0.3"/>
+                    <circle cx="50" cy="50" r="10" />
+                </svg>
+            </div>
+
+            <h1 class="font-cinzel text-4xl md:text-6xl text-gold-gradient mb-2 tracking-wider">Akarsh & Vartika</h1>
+            <div class="h-px w-24 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mx-auto my-6"></div>
+            <p class="font-cinzel text-[#F9E59E] tracking-[0.3em] text-xs md:text-sm uppercase mb-8">The Royal Wedding Celebration</p>
+            
+            <div class="mt-8 flex flex-col items-center gap-3 group">
+                <span class="font-cinzel text-white/60 text-xs tracking-widest group-hover:text-[#D4AF37] transition-colors">Tap to Begin</span>
+                <div class="w-1 h-8 bg-gradient-to-b from-[#D4AF37] to-transparent opacity-50 group-hover:h-12 transition-all duration-500"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. INTRO SEQUENCE CONTAINER -->
+    <div id="intro-container" class="fixed inset-0 z-40 pointer-events-none flex flex-col items-center justify-center hidden-visually">
+        <div class="text-center relative z-20 px-4">
+            <!-- Line 1 -->
+            <h2 id="intro-text-1" class="font-script text-4xl md:text-6xl text-[#D4AF37] mb-6 opacity-0 transform translate-y-8 transition-all duration-1000 ease-out">
+                Under the stars...
+            </h2>
+            <!-- Line 2 -->
+            <h2 id="intro-text-2" class="font-cinzel text-xl md:text-3xl text-white/90 tracking-widest opacity-0 transform translate-y-8 transition-all duration-1000 ease-out delay-200">
+                TWO SOULS UNITE
+            </h2>
+        </div>
+        <div class="absolute inset-0 bg-black/80 z-10 transition-opacity duration-1000"></div>
+    </div>
+
+    <!-- 3. MAIN VIDEO BACKGROUND -->
+    <div id="video-wrapper" class="video-wrapper">
+        <div id="cinematic-overlay" class="cinematic-overlay"></div>
+        <!-- 
+           Video Strategy:
+           1. Loop REMOVED so we can detect 'ended' event.
+           2. Playsinline for mobile.
+        -->
+        <video id="wedding-video" playsinline poster="https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80">
+            <!-- Using a solid stock footage placeholder -->
+            <source src="/video.MP4" type="video/mp4">
+            Your browser does not support HTML5 video.
+        </video>
+    </div>
+
+    <!-- 4. MAIN LANDING CONTENT (Post Video) -->
+    <div id="main-content" class="absolute inset-0 z-30 flex flex-col items-center justify-center text-center hidden-visually transition-opacity duration-2000">
+        
+        <!-- Ornate Top -->
+        <div class="mb-8 opacity-0 blur-in" style="animation-delay: 0.5s">
+            <span class="text-[#D4AF37] text-2xl">❖</span>
+        </div>
+
+        <!-- Names -->
+        <h1 class="font-cinzel text-5xl md:text-7xl lg:text-8xl text-gold-gradient mb-4 opacity-0 blur-in" style="animation-delay: 1s; line-height: 1.2;">
+            Akarsh<br>
+            <span class="font-script text-4xl md:text-6xl text-white/80 lowercase mx-2">&</span><br>
+            Vartika
+        </h1>
+
+        <!-- Date & Location -->
+        <div class="mt-8 space-y-2 opacity-0 blur-in" style="animation-delay: 2s">
+            <p class="font-cinzel text-[#F9E59E] tracking-[0.2em] text-sm md:text-lg">9th - 10th MARCH 2026</p>
+            <p class="font-cinzel text-white/60 text-xs md:text-sm tracking-widest uppercase">ALILA FORT, JAIPUR</p>
+        </div>
+
+        <!-- CTA Button -->
+        <div class="mt-16 opacity-0 blur-in" style="animation-delay: 3s">
+            <button id="enter-btn" class="btn-royal font-cinzel text-lg uppercase tracking-widest">
+               Enter The Wedding Invitation
+            </button>
+        </div>
+        
+    </div>
+
+    <!-- 5. WHITE FLASH OVERLAY (For Transition) -->
+    <div id="flash-overlay" class="fixed inset-0 z-[100] bg-white pointer-events-none opacity-0 transition-opacity duration-2000"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIG ---
+            const els = {
+                audio: document.getElementById('wedding-audio'),
+                audioBtn: document.getElementById('audio-btn'),
+                video: document.getElementById('wedding-video'),
+                videoWrapper: document.getElementById('video-wrapper'),
+                videoOverlay: document.getElementById('cinematic-overlay'),
+                startOverlay: document.getElementById('start-overlay'),
+                introContainer: document.getElementById('intro-container'),
+                introText1: document.getElementById('intro-text-1'),
+                introText2: document.getElementById('intro-text-2'),
+                mainContent: document.getElementById('main-content'),
+                enterBtn: document.getElementById('enter-btn'),
+                flashOverlay: document.getElementById('flash-overlay'),
+                body: document.body
+            };
+
+            let isMuted = false;
+
+            // --- PARTICLE SYSTEM ---
+            function initParticles() {
+                const container = document.getElementById('particles-container');
+                if (!container) return; // Safety check
+                const particleCount = window.innerWidth < 768 ? 20 : 50;
+
+                for (let i = 0; i < particleCount; i++) {
+                    createParticle(container);
+                }
+            }
+
+            function createParticle(container) {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                
+                const size = Math.random() * 3 + 1;
+                p.style.width = `${size}px`;
+                p.style.height = `${size}px`;
+                
+                // Random start position
+                p.style.left = `${Math.random() * 100}vw`;
+                p.style.top = `${Math.random() * 100}vh`;
+                p.style.opacity = Math.random() * 0.5 + 0.1;
+
+                // Animate
+                const duration = Math.random() * 10 + 10; // 10-20s
+                
+                p.animate([
+                    { transform: `translate(0, 0)`, opacity: 0 },
+                    { opacity: 0.8, offset: 0.5 },
+                    { transform: `translate(${Math.random()*100 - 50}px, -${Math.random()*100 + 50}px)`, opacity: 0 }
+                ], {
+                    duration: duration * 1000,
+                    iterations: Infinity,
+                    easing: 'linear'
+                });
+
+                container.appendChild(p);
+            }
+
+            // --- AUDIO LOGIC ---
+            function toggleAudio() {
+                if (!els.audio) return;
+                
+                if (els.audio.paused) {
+                    els.audio.play();
+                    if(els.audioBtn) {
+                        els.audioBtn.innerHTML = "♪";
+                        els.audioBtn.style.opacity = "1";
+                    }
+                } else {
+                    if (isMuted) {
+                        els.audio.muted = false;
+                        if(els.audioBtn) {
+                            els.audioBtn.innerHTML = "♪";
+                            els.audioBtn.style.borderColor = "rgba(212, 175, 55, 0.5)";
+                        }
+                    } else {
+                        els.audio.muted = true;
+                        if(els.audioBtn) {
+                            els.audioBtn.innerHTML = "✕";
+                            els.audioBtn.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                        }
+                    }
+                    isMuted = !isMuted;
+                }
+            }
+
+            // --- SEQUENCE CONTROLLER ---
+
+            // 1. User Taps Start
+            if (els.startOverlay) {
+                els.startOverlay.addEventListener('click', () => {
+                    // Remove Start Screen
+                    els.startOverlay.style.opacity = '0';
+                    setTimeout(() => els.startOverlay.remove(), 1000);
+
+                    // Play Audio (Fade In)
+                    if (els.audio) {
+                        els.audio.volume = 0;
+                        els.audio.play().then(() => {
+                            // Show audio toggle
+                            if (els.audioBtn) els.audioBtn.style.opacity = "0.7";
+                            
+                            // Fade volume up
+                            let vol = 0;
+                            const fadeInt = setInterval(() => {
+                                if(vol < 0.8) {
+                                    vol += 0.05;
+                                    els.audio.volume = vol;
+                                } else {
+                                    clearInterval(fadeInt);
+                                }
+                            }, 200);
+                        }).catch(e => console.log("Audio play prevented:", e));
+                    }
+
+                    // Start Sequence
+                    runIntroSequence();
+                });
+            }
+
+            // 2. Intro Text Sequence
+            function runIntroSequence() {
+                if(els.introContainer) {
+                    els.introContainer.classList.remove('hidden-visually');
+                    els.introContainer.classList.add('visible');
+                }
+
+                // Animate Text 1
+                if(els.introText1) {
+                    setTimeout(() => {
+                        els.introText1.style.opacity = '1';
+                        els.introText1.style.transform = 'translateY(0)';
+                    }, 500);
+                }
+
+                // Animate Text 2
+                if(els.introText2) {
+                    setTimeout(() => {
+                        els.introText2.style.opacity = '1';
+                        els.introText2.style.transform = 'translateY(0)';
+                    }, 2500);
+                }
+
+                // Transition to Main Video
+                setTimeout(() => {
+                    // Fade out intro text
+                    if(els.introContainer) els.introContainer.style.opacity = '0';
+                    
+                    // Show Video Container
+                    if(els.videoWrapper) els.videoWrapper.classList.add('active');
+                    
+                    // Play Video
+                    if(els.video) {
+                        els.video.play().catch(e => {
+                            console.log("Video autoplay blocked", e);
+                            // If video fails, trigger end immediately
+                            triggerVideoEnd();
+                        });
+                    }
+
+                    // Hide intro container after fade
+                    setTimeout(() => {
+                        if(els.introContainer) els.introContainer.classList.add('hidden-visually');
+                    }, 1000);
+
+                }, 5500);
+            }
+
+            // 3. LISTEN FOR VIDEO END TO SHOW BUTTON
+            if (els.video) {
+                els.video.addEventListener('ended', triggerVideoEnd);
+            }
+
+            function triggerVideoEnd() {
+                // 1. Fade out the video completely (Opacity 0)
+                if(els.videoWrapper) els.videoWrapper.classList.remove('active');
+                
+                // 2. Wait for the video to mostly fade out (1.5s), then reveal the content
+                // The video wrapper has a 2s transition, so 1.5s overlaps nicely
+                setTimeout(() => {
+                    // Show Names and Button
+                    if(els.mainContent) {
+                        els.mainContent.classList.remove('hidden-visually');
+                        els.mainContent.classList.add('visible');
+                    }
+                }, 1500);
+            }
+
+            // 4. Audio Toggle Listener
+            if (els.audioBtn) {
+                els.audioBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent clicking through
+                    toggleAudio();
+                });
+            }
+
+            // 5. Exit Animation (Zoom into Light)
+            if (els.enterBtn) {
+                els.enterBtn.addEventListener('click', () => {
+                    // Add zoom class to body or wrapper
+                    if(els.mainContent) els.mainContent.classList.add('zoom-exit');
+                    if(els.videoWrapper) els.videoWrapper.classList.add('zoom-exit');
+                    
+                    // Fade Audio Out
+                    if (els.audio) {
+                        const fadeOut = setInterval(() => {
+                            if(els.audio.volume > 0.1) {
+                                els.audio.volume -= 0.1;
+                            } else {
+                                clearInterval(fadeOut);
+                                els.audio.pause();
+                            }
+                        }, 100);
+                    }
+
+                    // Flash White
+                    if(els.flashOverlay) {
+                        setTimeout(() => {
+                            els.flashOverlay.style.opacity = '1';
+                        }, 1800);
+                    }
+
+                    // Redirect
+                    setTimeout(() => {
+                        console.log("Redirecting...");
+                        window.location.href = 'home.html'; 
+                    }, 2500);
+                });
+            }
+
+            // Initialize
+            initParticles();
+        });
+    </script>
+</body>
+</html>
