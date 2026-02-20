@@ -304,11 +304,11 @@
            Video Strategy:
            1. Loop REMOVED so we can detect 'ended' event.
            2. playsinline AND webkit-playsinline for maximum iOS/iPad compatibility.
-           3. muted is strictly required by Apple.
+           3. muted is initially strictly required by Apple to unlock playback on load.
         -->
-        <video id="wedding-video" playsinline webkit-playsinline preload="auto" poster="https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80">
+        <video id="wedding-video" playsinline webkit-playsinline muted preload="auto" poster="https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80">
             <!-- Using a solid stock footage placeholder -->
-            <source src="1.mp4" type="video/mp4">
+            <source src="1.MP4" type="video/mp4">
             Your browser does not support HTML5 video.
         </video>
     </div>
@@ -411,27 +411,26 @@
             function toggleAudio() {
                 if (!els.audio) return;
                 
-                if (els.audio.paused) {
+                if (els.audio.paused || isMuted) {
+                    // Turn Audio & Video ON
                     els.audio.play();
+                    els.audio.muted = false;
+                    if(els.video) els.video.muted = false;
                     if(els.audioBtn) {
                         els.audioBtn.innerHTML = "♪";
                         els.audioBtn.style.opacity = "1";
+                        els.audioBtn.style.borderColor = "rgba(212, 175, 55, 0.5)";
                     }
+                    isMuted = false;
                 } else {
-                    if (isMuted) {
-                        els.audio.muted = false;
-                        if(els.audioBtn) {
-                            els.audioBtn.innerHTML = "♪";
-                            els.audioBtn.style.borderColor = "rgba(212, 175, 55, 0.5)";
-                        }
-                    } else {
-                        els.audio.muted = true;
-                        if(els.audioBtn) {
-                            els.audioBtn.innerHTML = "✕";
-                            els.audioBtn.style.borderColor = "rgba(255, 255, 255, 0.2)";
-                        }
+                    // Turn Audio & Video OFF
+                    els.audio.muted = true;
+                    if(els.video) els.video.muted = true;
+                    if(els.audioBtn) {
+                        els.audioBtn.innerHTML = "✕";
+                        els.audioBtn.style.borderColor = "rgba(255, 255, 255, 0.2)";
                     }
-                    isMuted = !isMuted;
+                    isMuted = true;
                 }
             }
 
@@ -446,7 +445,7 @@
 
                     // --- iOS & iPAD BULLETPROOF FIX ---
                     // Start playing the video IMMEDIATELY on click to satisfy Apple's strict gesture rules.
-                    // We keep it invisible (opacity 0) while the text intro plays.
+                    // We keep it invisible (opacity 0) and muted while the text intro plays.
                     if (els.video) {
                         els.video.muted = true;
                         els.video.load(); // Force load
@@ -513,8 +512,13 @@
                     if(els.videoWrapper) els.videoWrapper.classList.add('active');
                     
                     // The video has been playing silently in the background. 
-                    // Now that we reveal it, we instantly rewind it to the beginning so you don't miss anything.
+                    // Now that we reveal it, we instantly rewind it to the beginning AND RESTORE SOUND!
                     if(els.video) {
+                        // Restore sound unless user globally muted it
+                        if (!isMuted) {
+                            els.video.muted = false; 
+                        }
+                        
                         els.video.currentTime = 0;
                         let p = els.video.play();
                         if (p !== undefined) {
@@ -574,9 +578,11 @@
                         const fadeOut = setInterval(() => {
                             if(els.audio.volume > 0.1) {
                                 els.audio.volume -= 0.1;
+                                if(els.video && els.video.volume > 0.1) els.video.volume -= 0.1;
                             } else {
                                 clearInterval(fadeOut);
                                 els.audio.pause();
+                                if(els.video) els.video.pause();
                             }
                         }, 100);
                     }
@@ -602,4 +608,3 @@
     </script>
 </body>
 </html>
-
