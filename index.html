@@ -32,6 +32,7 @@
             margin: 0;
             padding: 0;
             height: 100vh;
+            height: 100dvh;
             width: 100vw;
         }
 
@@ -103,6 +104,7 @@
                - Width will auto-calculate to maintain 9:16 ratio
             */
             height: 100vh;
+            height: 100dvh;
             width: auto;
             
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
@@ -301,9 +303,10 @@
         <!-- 
            Video Strategy:
            1. Loop REMOVED so we can detect 'ended' event.
-           2. Playsinline for mobile.
+           2. playsinline AND webkit-playsinline for maximum iOS/iPad compatibility.
+           3. muted is strictly required by Apple.
         -->
-        <video id="wedding-video" playsinline poster="https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80">
+        <video id="wedding-video" playsinline webkit-playsinline muted preload="auto" poster="https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80">
             <!-- Using a solid stock footage placeholder -->
             <source src="1.mp4" type="video/mp4">
             Your browser does not support HTML5 video.
@@ -441,6 +444,18 @@
                     els.startOverlay.style.opacity = '0';
                     setTimeout(() => els.startOverlay.remove(), 1000);
 
+                    // --- iOS & iPAD BULLETPROOF FIX ---
+                    // Start playing the video IMMEDIATELY on click to satisfy Apple's strict gesture rules.
+                    // We keep it invisible (opacity 0) while the text intro plays.
+                    if (els.video) {
+                        els.video.muted = true;
+                        els.video.load(); // Force load
+                        let playPromise = els.video.play();
+                        if (playPromise !== undefined) {
+                            playPromise.catch(e => console.log("Initial background play info:", e));
+                        }
+                    }
+
                     // Play Audio (Fade In)
                     if (els.audio) {
                         els.audio.volume = 0;
@@ -497,13 +512,18 @@
                     // Show Video Container
                     if(els.videoWrapper) els.videoWrapper.classList.add('active');
                     
-                    // Play Video
+                    // The video has been playing silently in the background. 
+                    // Now that we reveal it, we instantly rewind it to the beginning so you don't miss anything.
                     if(els.video) {
-                        els.video.play().catch(e => {
-                            console.log("Video autoplay blocked", e);
-                            // If video fails, trigger end immediately
-                            triggerVideoEnd();
-                        });
+                        els.video.currentTime = 0;
+                        let p = els.video.play();
+                        if (p !== undefined) {
+                            p.catch(e => {
+                                console.log("Video final playback blocked", e);
+                                // If iOS Low Power Mode blocks it completely, instantly show the button
+                                triggerVideoEnd();
+                            });
+                        }
                     }
 
                     // Hide intro container after fade
@@ -571,7 +591,7 @@
                     // Redirect
                     setTimeout(() => {
                         console.log("Redirecting...");
-                        window.location.href = 'home.html'; 
+                        window.location.href = 'invitation.html'; 
                     }, 2500);
                 });
             }
@@ -582,4 +602,3 @@
     </script>
 </body>
 </html>
-
